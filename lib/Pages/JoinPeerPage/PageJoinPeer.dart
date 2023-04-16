@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
+import 'package:kukus_multi_user_ide/Backend/WebRTC/DataChannelType.dart';
 import 'package:provider/provider.dart';
 
 import '../../Backend/provider/ProviderBackend.dart';
@@ -43,10 +44,12 @@ class _PageJoinPeerState extends State<PageJoinPeer> {
       }
     };
     providerBackend.webRTCServices.peerConnection?.onIceConnectionState =
-        (state) {
+        (state) async {
       if (state == RTCIceConnectionState.RTCIceConnectionStateConnected ||
           state == RTCIceConnectionState.RTCIceConnectionStateConnected) {
-        statusSC.add("Successfully Connected");
+        statusSC.add("Successfully Connected.");
+        await providerBackend.webRTCServices
+            .addDataChannel(DataChannelType.GLOBAL);
       }
     };
   }

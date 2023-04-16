@@ -7,6 +7,8 @@ import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:kukus_multi_user_ide/Backend/provider/ProviderBackend.dart';
 import 'package:provider/provider.dart';
 
+import '../../Backend/WebRTC/DataChannelType.dart';
+
 class PageCreatePeer extends StatefulWidget {
   const PageCreatePeer({Key? key}) : super(key: key);
 
@@ -25,10 +27,12 @@ class _PageCreatePeerState extends State<PageCreatePeer> {
     ProviderBackend providerBackend =
         Provider.of<ProviderBackend>(context, listen: false);
     providerBackend.webRTCServices.peerConnection?.onIceConnectionState =
-        (state) {
+        (state) async {
       if (state == RTCIceConnectionState.RTCIceConnectionStateConnected ||
           state == RTCIceConnectionState.RTCIceConnectionStateConnected) {
         statusSC.add("Successfully Connected");
+        await providerBackend.webRTCServices
+            .addDataChannel(DataChannelType.GLOBAL);
       }
     };
     pasteOfferToTextField(providerBackend);
@@ -74,7 +78,8 @@ class _PageCreatePeerState extends State<PageCreatePeer> {
                         statusSC.add("Setting Remote SDP");
                         await providerBackend.webRTCServices
                             .setRemoteSDP(remoteSDPTC.text);
-                        statusSC.add("Setting Remote SDP Complete. Copy any Candidate from Joining Client and paste it below");
+                        statusSC.add(
+                            "Setting Remote SDP Complete. Copy any Candidate from Joining Client and paste it below");
                       },
                       child: Text("Set Remote Description")),
                   TextField(

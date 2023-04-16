@@ -81,7 +81,16 @@ class WebRTCService {
     await peerConnection?.addCandidate(candidate);
   }
 
-  void addDataChannel(DataChannelType type) {}
+  Future<void> addDataChannel(DataChannelType type) async {
+    RTCDataChannel? dc = await peerConnection?.createDataChannel(
+        type.toString(), RTCDataChannelInit());
+    if (dc == null) return;
+    dataChannels[type.toString()] = dc;
+  }
 
-  void closeDataChannel(DataChannelType type) {}
+  Future<void> closeDataChannel(DataChannelType type) async {
+    if (!dataChannels.containsKey(type)) return;
+    var dc = dataChannels[type];
+    await dc?.close();
+  }
 }

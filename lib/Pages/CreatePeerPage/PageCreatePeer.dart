@@ -74,9 +74,9 @@ class _PageCreatePeerState extends State<PageCreatePeer> {
                         statusSC.add("Setting Remote SDP");
                         await providerBackend.webRTCServices
                             .setRemoteSDP(remoteSDPTC.text);
-                        statusSC.add("Setting Remote SDP Complete.");
+                        statusSC.add("Setting Remote SDP Complete. Copy any Candidate from Joining Client and paste it below");
                       },
-                      child: Text("Confirm Generated Answer")),
+                      child: Text("Set Remote Description")),
                   TextField(
                     controller: candidateTC,
                     decoration: InputDecoration(

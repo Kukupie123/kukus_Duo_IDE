@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_constructors, sized_box_for_whitespace
 
 import 'dart:async';
 import 'dart:convert';
@@ -28,7 +28,7 @@ class _PageJoinPeerState extends State<PageJoinPeer> {
   void initState() {
     super.initState();
     ProviderBackend providerBackend =
-    Provider.of<ProviderBackend>(context, listen: false);
+        Provider.of<ProviderBackend>(context, listen: false);
     providerBackend.webRTCServices.peerConnection?.onIceCandidate =
         (RTCIceCandidate candidate) {
       if (candidate.candidate != null) {
@@ -37,7 +37,9 @@ class _PageJoinPeerState extends State<PageJoinPeer> {
           'sdpMid': candidate.sdpMid,
           'sdpMlineIndex': candidate.sdpMLineIndex
         }));
-        generatedIceCandidate.add(encodedICE);
+        setState(() {
+          generatedIceCandidate.add(encodedICE);
+        });
       }
     };
     providerBackend.webRTCServices.peerConnection?.onIceConnectionState =
@@ -52,7 +54,7 @@ class _PageJoinPeerState extends State<PageJoinPeer> {
   @override
   Widget build(BuildContext context) {
     ProviderBackend providerBackend =
-    Provider.of<ProviderBackend>(context, listen: false);
+        Provider.of<ProviderBackend>(context, listen: false);
 
     return Scaffold(
       body: SizedBox(
@@ -77,43 +79,46 @@ class _PageJoinPeerState extends State<PageJoinPeer> {
                           return;
                         }
                         statusSC.add("Setting Remote SDP");
-                        await providerBackend.webRTCServices
+                        var generatedAnsSDP = await providerBackend
+                            .webRTCServices
                             .setRemoteSDP(remoteSDPTC.text);
+                        offerGeneratedTC.text = generatedAnsSDP!;
                         statusSC.add(
-                            "Setting Remote SDP Complete. Please Generate and Offer now.");
+                            "Setting Remote SDP Complete. Copy the generated Answer below and set it as the Remote Description of the Host.\n ICE Candidates should also start appearing. If not try Setting Remote Description again.");
                       },
-                      child: Text("Confirm Generated Answer")),
+                      child: Text("Set Remote Description")),
                   TextField(
                     controller: offerGeneratedTC,
                     decoration: InputDecoration(
                         hintText:
-                        "Generate Offer after Confirming Generated Answer"),
+                            "Generated Answer shows here after Setting Remote Description"),
                   ),
-                  TextButton(
-                      onPressed: () async {
-                        if (offerGeneratedTC.text.isEmpty) {
-                          statusSC.add("Textfield is empty");
-                          return;
-                        }
-                        statusSC.add("Generating Offer SDP");
-                        await generateOfferAndPutInTextField(providerBackend);
-                        statusSC.add(
-                            "Generated Offer SDP. Paste this as the Answer in the Host.");
-                      },
-                      child: Text("Generate Offer")),
-                  ListView(
-                    children: List.generate(
-                      generatedIceCandidate.length,
-                          (index) =>
-                          GestureDetector(
-                            onTap: () async {
-                              statusSC.add("Copying Candidate ${index + 1}");
-                              await Clipboard.setData(ClipboardData(
-                                  text: generatedIceCandidate[index]));
-                              statusSC.add("Copied Candidate ${index + 1}");
-                            },
-                            child: Text(generatedIceCandidate[index]),
+                  Text(
+                      "GENERATED ICE CANDIDATE :================================"),
+                  Container(
+                    height: 300,
+                    child: ListView(
+                      children: List.generate(
+                        generatedIceCandidate.length,
+                        (index) => Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Card(
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: GestureDetector(
+                                onTap: () async {
+                                  statusSC
+                                      .add("Copying Candidate ${index + 1}");
+                                  await Clipboard.setData(ClipboardData(
+                                      text: generatedIceCandidate[index]));
+                                  statusSC.add("Copied Candidate ${index + 1}");
+                                },
+                                child: Text(generatedIceCandidate[index]),
+                              ),
+                            ),
                           ),
+                        ),
+                      ),
                     ),
                   )
                 ],

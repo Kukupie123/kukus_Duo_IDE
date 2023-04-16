@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:kukus_multi_user_ide/Backend/provider/ProviderBackend.dart';
 import 'package:kukus_multi_user_ide/Pages/CreatePeerPage/PageCreatePeer.dart';
+import 'package:kukus_multi_user_ide/Pages/JoinPeerPage/PageJoinPeer.dart';
 import 'package:provider/provider.dart';
 
 class PageChoose extends StatelessWidget {
@@ -32,7 +33,15 @@ class PageChoose extends StatelessWidget {
           },
           child: Column(
             children: [
-              TextButton(onPressed: () {}, child: const Text("Join Peer")),
+              TextButton(
+                  onPressed: () {
+                    Navigator.pushReplacement(
+                        context,
+                        CupertinoPageRoute(
+                          builder: (context) => PageJoinPeer(),
+                        ));
+                  },
+                  child: const Text("Join Peer")),
               TextButton(
                   onPressed: () {
                     Navigator.pushReplacement(

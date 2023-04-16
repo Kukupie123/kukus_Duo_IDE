@@ -10,7 +10,8 @@ class WebRTCService {
   String meteredTurnAPIKey =
       "https://kukukode.metered.live/api/v1/turn/credentials?apiKey=9a5291dbc60a034b7a899a94ee60f2e02453";
 
-  Map<String, RTCDataChannel> dataChannels = {};
+  Map<String, RTCDataChannel> _dataChannels = {};
+  RTCDataChannel? globalDataChannel;
 
   Future<void> asyncConstructor() async {
     await _createPeer();
@@ -28,6 +29,7 @@ class WebRTCService {
     };
     peerConnection = await createPeerConnection(
         config, sDPConstraints); //Create peer connection
+    await addDataChannel(DataChannelType.GLOBAL);
   }
 
   Future<Map<String, dynamic>> _createPeerConfig() async {
@@ -81,16 +83,37 @@ class WebRTCService {
     await peerConnection?.addCandidate(candidate);
   }
 
+  RTCDataChannel? getDataChannel(DataChannelType type) {
+    return _dataChannels[type.toString()];
+  }
+
   Future<void> addDataChannel(DataChannelType type) async {
-    RTCDataChannel? dc = await peerConnection?.createDataChannel(
-        type.toString(), RTCDataChannelInit());
-    if (dc == null) return;
-    dataChannels[type.toString()] = dc;
+    var d = RTCDataChannelInit();
+    d.ordered = true;
+    RTCDataChannel? dc =
+        await peerConnection?.createDataChannel(type.toString(), d);
+    if (dc == null) {
+      throw Exception("Creating DataChannel of type ${type.toString()} failed");
+    }
+    _dataChannels[type.toString()] = dc;
+    globalDataChannel = dc;
+
+    globalDataChannel?.onMessage = (data) {
+      print("Msg on DC ${type.toString()} : ${data.text}");
+    };
+    globalDataChannel?.onDataChannelState = (state) {
+      print("DC State Changed to : ${state.toString()}");
+
+      if (state == RTCDataChannelState.RTCDataChannelOpen) {
+        globalDataChannel?.send(RTCDataChannelMessage("DUMMY TEST"));
+      }
+    };
   }
 
   Future<void> closeDataChannel(DataChannelType type) async {
-    if (!dataChannels.containsKey(type)) return;
-    var dc = dataChannels[type];
+    if (_dataChannels.containsKey(type)) return;
+    var dc = _dataChannels[type];
+
     await dc?.close();
   }
 }

@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors, sized_box_for_whitespace
+// ignore_for_file: prefer_const_constructors, sized_box_for_whitespace, use_build_context_synchronously
 
 import 'dart:async';
 import 'dart:convert';
@@ -10,6 +10,7 @@ import 'package:kukus_multi_user_ide/Backend/WebRTC/DataChannelType.dart';
 import 'package:provider/provider.dart';
 
 import '../../Backend/provider/ProviderBackend.dart';
+import '../SelectProjectPage/PageSelectProject.dart';
 
 class PageJoinPeer extends StatefulWidget {
   const PageJoinPeer({Key? key}) : super(key: key);
@@ -48,8 +49,11 @@ class _PageJoinPeerState extends State<PageJoinPeer> {
       if (state == RTCIceConnectionState.RTCIceConnectionStateConnected ||
           state == RTCIceConnectionState.RTCIceConnectionStateConnected) {
         statusSC.add("Successfully Connected.");
-        await providerBackend.webRTCServices
-            .addDataChannel(DataChannelType.GLOBAL);
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PageSelectProject(),
+            ));
       }
     };
   }

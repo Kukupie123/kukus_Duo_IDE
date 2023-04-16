@@ -1,10 +1,11 @@
-// ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors, sized_box_for_whitespace
+// ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors, sized_box_for_whitespace, use_build_context_synchronously
 
 import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:kukus_multi_user_ide/Backend/provider/ProviderBackend.dart';
+import 'package:kukus_multi_user_ide/Pages/SelectProjectPage/PageSelectProject.dart';
 import 'package:provider/provider.dart';
 
 import '../../Backend/WebRTC/DataChannelType.dart';
@@ -31,8 +32,11 @@ class _PageCreatePeerState extends State<PageCreatePeer> {
       if (state == RTCIceConnectionState.RTCIceConnectionStateConnected ||
           state == RTCIceConnectionState.RTCIceConnectionStateConnected) {
         statusSC.add("Successfully Connected");
-        await providerBackend.webRTCServices
-            .addDataChannel(DataChannelType.GLOBAL);
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PageSelectProject(),
+            ));
       }
     };
     pasteOfferToTextField(providerBackend);

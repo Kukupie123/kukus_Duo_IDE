@@ -3,6 +3,7 @@
 import 'dart:convert';
 
 import 'package:flutter_webrtc/flutter_webrtc.dart';
+import 'package:kukus_multi_user_ide/Backend/WebRTC/DataChannelType.dart';
 import 'package:kukus_multi_user_ide/Backend/provider/ProviderBackend.dart';
 
 import 'ReqRespAction.dart';
@@ -23,7 +24,8 @@ class ReqRespService {
       }
     };
     var encodedResp = json.encode(map);
-    RTCDataChannel dc = providerBackend.webRTCServices.globalDataChannel!;
+    RTCDataChannel dc =
+        providerBackend.webRTCServices.getDataChannel(DataChannelType.GLOBAL)!;
     await dc.send(RTCDataChannelMessage(encodedResp));
   }
 

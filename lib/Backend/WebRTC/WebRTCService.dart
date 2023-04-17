@@ -10,8 +10,7 @@ class WebRTCService {
   String meteredTurnAPIKey =
       "https://kukukode.metered.live/api/v1/turn/credentials?apiKey=9a5291dbc60a034b7a899a94ee60f2e02453";
 
-  Map<String, RTCDataChannel> _dataChannels = {};
-  RTCDataChannel? globalDataChannel;
+  final Map<String, RTCDataChannel> _dataChannels = {};
 
   Future<void> asyncConstructor() async {
     await _createPeer();
@@ -66,7 +65,7 @@ class WebRTCService {
     var decodedSDP = jsonDecode(jsonSDP);
     RTCSessionDescription sdp =
         RTCSessionDescription(decodedSDP, isCaller ? "answer" : "offer");
-    var encodedJSON = json.encode(sdp.sdp.toString());
+    //var encodedJSON = json.encode(sdp.sdp.toString());
     await peerConnection?.setRemoteDescription(sdp);
 
     if (!isCaller) {
@@ -96,16 +95,19 @@ class WebRTCService {
       throw Exception("Creating DataChannel of type ${type.toString()} failed");
     }
     _dataChannels[type.toString()] = dc;
-    globalDataChannel = dc;
-
-    globalDataChannel?.onMessage = (data) {
+    var gdc = _dataChannels[type.toString()];
+    if (gdc == null) {
+      throw Exception(
+          "Creating DataChannel of type ${type.toString()} failed cuz GDC is null");
+    }
+    gdc.onMessage = (data) {
       print("Msg on DC ${type.toString()} : ${data.text}");
     };
-    globalDataChannel?.onDataChannelState = (state) {
+    gdc.onDataChannelState = (state) {
       print("DC State Changed to : ${state.toString()}");
 
       if (state == RTCDataChannelState.RTCDataChannelOpen) {
-        globalDataChannel?.send(RTCDataChannelMessage("DUMMY TEST"));
+        gdc.send(RTCDataChannelMessage("DUMMY TEST"));
       }
     };
   }

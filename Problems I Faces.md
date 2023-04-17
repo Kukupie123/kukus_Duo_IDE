@@ -2,3 +2,4 @@
 #### I had to set "negotiated = true". Each negotiated DataChannel must have a UID. If you fail to provide UID then you will only be able to create one negotiated DC.
 ### When I send data as a caller it is received properly by the Callee. But I want the Caller to get the data I sent as a caller too to keep consistency.
 #### I setup a second Data Channel to send back the data received as a Callee. Not sure if it's scalable when there are multiple peers. 
+### Reminder : One Handler will overwrite another. If you have a DC.onMessage in 1.dart and another in 2.dart, only one of them will run.

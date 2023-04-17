@@ -24,6 +24,7 @@ class ProviderBackend extends ChangeNotifier {
     gdc!.onMessage = (data) async {
       webRTCServices.dataMsgs[DataChannelType.GLOBAL.toString()] = data;
       await ldc?.send(data);
+      print("Global DC : ${data.text}");
       notifyListeners();
     };
     ldc!.onMessage = (data) {
@@ -31,6 +32,7 @@ class ProviderBackend extends ChangeNotifier {
       decodedResp['uid'] = "loop";
       var newData = RTCDataChannelMessage(json.encode(decodedResp));
       webRTCServices.dataMsgs[DataChannelType.LOOPBACK.toString()] = newData;
+      print("Loopback DC : ${newData.text}");
       notifyListeners();
     };
     notifyListeners();

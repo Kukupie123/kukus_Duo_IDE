@@ -31,7 +31,8 @@ class ProviderBackend extends ChangeNotifier {
       var decodedResp = json.decode(data.text);
       decodedResp['uid'] = "loop";
       var newData = RTCDataChannelMessage(json.encode(decodedResp));
-      webRTCServices.dataMsgs[DataChannelType.LOOPBACK.toString()] = newData;
+      webRTCServices.dataMsgs[DataChannelType.GLOBAL.toString()] =
+          newData; //Saving the Message to Global DC NOT Loopback DC
       print("Loopback DC : ${newData.text}");
       notifyListeners();
     };

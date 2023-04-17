@@ -6,6 +6,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:kukus_multi_user_ide/Backend/WebRTC/DataChannelType.dart';
+import 'package:kukus_multi_user_ide/Backend/WebRTC/WebRTCService.dart';
 import 'package:kukus_multi_user_ide/Backend/provider/ProviderBackend.dart';
 import 'package:kukus_multi_user_ide/Backend/util/ReqRespService.dart';
 import 'package:provider/provider.dart';
@@ -41,37 +42,51 @@ class _PageSelectProjectState extends State<PageSelectProject> {
   }
 
   Widget widgetDecider(NavigatorState navigatorState) {
-    if (providerBackend!.webRTCServices.isCaller) {
-      if (openFileModel == null) {
-        return SingleChildScrollView(
-          child: Column(
-            children: [
-              TextButton(
-                  onPressed: () {
-                    _pickFile(navigatorState);
-                  },
-                  child: Text("Open File")),
-              TextButton(
-                  onPressed: () async {
-                    await providerBackend?.webRTCServices
-                        .getDataChannel(DataChannelType.GLOBAL)!
-                        .send(RTCDataChannelMessage(
-                            json.encode({"action": "Hello", "data": "dummy"})));
-                  },
-                  child: Text("Open Folder (WIP)"))
-            ],
-          ),
-        );
-      } else {
-        return Text("Loaded file with name ${openFileModel?.name}");
-      }
-    } else {
-      if (openFileModel == null) {
-        return Text("Waiting for host to select an action");
-      } else {
-        return Text("Loaded file with name ${openFileModel?.name}");
-      }
+    return Consumer<ProviderBackend>(
+        builder: (context, value, child) {
+          //Check if we have valid RTCMessage in dataMsgs map variable
+          var dcMsg =
+          value.webRTCServices.dataMsgs[DataChannelType.GLOBAL.toString()];
+          if (dcMsg == null) {
+            print("Data Msg of Global DC is null");
+            return child!;
+          }
+          return Text(dcMsg.text);
+        },
+        child: _childDecider(navigatorState)
+    );
+  }
+
+  Widget _childDecider(NavigatorState navigatorState) {
+    if (providerBackend == null) return Text("Provider Backend is null");
+    if (providerBackend?.webRTCServices == null) {
+      return Text("webRTCServices of Provider backend is null");
     }
+
+    ProviderBackend validBackendProvider = providerBackend!; //Fight against no null system of dart
+    WebRTCService webRTCService = validBackendProvider.webRTCServices;
+    if (webRTCService.isCaller) {
+      return SingleChildScrollView(
+        child: Column(
+          children: [
+            TextButton(
+                onPressed: () {
+                  _pickFile(navigatorState);
+                },
+                child: Text("Open File")),
+            TextButton(
+                onPressed: () async {
+                  await providerBackend?.webRTCServices
+                      .getDataChannel(DataChannelType.GLOBAL)!
+                      .send(RTCDataChannelMessage(
+                      json.encode({"action": "Hello", "data": "dummy"})));
+                },
+                child: Text("Open Folder (WIP)"))
+          ],
+        ),
+      );
+    }
+    return Text("Waiting for host to select an action");
   }
 
   initialSetup(BuildContext context) {

@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
+import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:kukus_multi_user_ide/Backend/WebRTC/DataChannelType.dart';
 import 'package:uuid/uuid.dart';
 
@@ -24,7 +27,10 @@ class ProviderBackend extends ChangeNotifier {
       notifyListeners();
     };
     ldc!.onMessage = (data) {
-      webRTCServices.dataMsgs[DataChannelType.LOOPBACK.toString()] = data;
+      var decodedResp = json.decode(data.text);
+      decodedResp['uid'] = "loop";
+      var newData = RTCDataChannelMessage(json.encode(decodedResp));
+      webRTCServices.dataMsgs[DataChannelType.LOOPBACK.toString()] = newData;
       notifyListeners();
     };
     notifyListeners();

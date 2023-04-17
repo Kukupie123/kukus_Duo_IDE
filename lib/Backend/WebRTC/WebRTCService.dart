@@ -10,7 +10,7 @@ class WebRTCService {
   String meteredTurnAPIKey =
       "https://kukukode.metered.live/api/v1/turn/credentials?apiKey=9a5291dbc60a034b7a899a94ee60f2e02453";
 
-  final Map<String, RTCDataChannel> _dataChannels = {};
+  Map<String, RTCDataChannel> _dataChannels = {};
 
   Future<void> asyncConstructor() async {
     await _createPeer();
@@ -28,7 +28,14 @@ class WebRTCService {
     };
     peerConnection = await createPeerConnection(
         config, sDPConstraints); //Create peer connection
-    await addDataChannel(DataChannelType.GLOBAL);
+    await addDataChannel(DataChannelType.GLOBAL, 0); //Add global Data channel
+    await addDataChannel(
+        DataChannelType.LOOPBACK, 1); //Add loopback data channel
+
+    //Add loopback listener for global DC. We do this because we need the caller to also get back the data it sends to callee
+    var gdc = _dataChannels[DataChannelType.GLOBAL];
+    var ldc = _dataChannels[DataChannelType.LOOPBACK];
+    gdc?.onMessage = (data) async => await ldc?.send(data);
   }
 
   Future<Map<String, dynamic>> _createPeerConfig() async {
@@ -86,36 +93,29 @@ class WebRTCService {
     return _dataChannels[type.toString()];
   }
 
-  Future<void> addDataChannel(DataChannelType type) async {
+  Future<void> addDataChannel(DataChannelType dataChannelType, int id) async {
     var d = RTCDataChannelInit();
+    d.id = id;
     d.ordered = true;
+    d.negotiated =
+        true; //THIS WAS THE ISSUE!!!! THIS WAS CAUSING THE MESSAGE TO NOT BE DELIVERED
     RTCDataChannel? dc =
-        await peerConnection?.createDataChannel(type.toString(), d);
+        await peerConnection?.createDataChannel(dataChannelType.toString(), d);
     if (dc == null) {
-      throw Exception("Creating DataChannel of type ${type.toString()} failed");
+      throw Exception(
+          "Creating DataChannel of type ${dataChannelType.toString()} failed");
     }
-    _dataChannels[type.toString()] = dc;
-    var gdc = _dataChannels[type.toString()];
+    _dataChannels[dataChannelType.toString()] = dc;
+    var gdc = _dataChannels[dataChannelType.toString()];
     if (gdc == null) {
       throw Exception(
-          "Creating DataChannel of type ${type.toString()} failed cuz GDC is null");
+          "Creating DataChannel of type ${dataChannelType.toString()} failed cuz GDC is null");
     }
-    gdc.onMessage = (data) {
-      print("Msg on DC ${type.toString()} : ${data.text}");
-    };
-    gdc.onDataChannelState = (state) {
-      print("DC State Changed to : ${state.toString()}");
-
-      if (state == RTCDataChannelState.RTCDataChannelOpen) {
-        gdc.send(RTCDataChannelMessage("DUMMY TEST"));
-      }
-    };
   }
 
   Future<void> closeDataChannel(DataChannelType type) async {
     if (_dataChannels.containsKey(type)) return;
     var dc = _dataChannels[type];
-
     await dc?.close();
   }
 }

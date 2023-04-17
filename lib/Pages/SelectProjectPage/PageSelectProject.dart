@@ -1,7 +1,6 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -53,7 +52,14 @@ class _PageSelectProjectState extends State<PageSelectProject> {
                     _pickFile(navigatorState);
                   },
                   child: Text("Open File")),
-              TextButton(onPressed: () {}, child: Text("Open Folder (WIP)"))
+              TextButton(
+                  onPressed: () async {
+                    await providerBackend?.webRTCServices
+                        .getDataChannel(DataChannelType.GLOBAL)!
+                        .send(RTCDataChannelMessage(
+                            json.encode({"action": "Hello", "data": "dummy"})));
+                  },
+                  child: Text("Open Folder (WIP)"))
             ],
           ),
         );
@@ -99,14 +105,16 @@ class _PageSelectProjectState extends State<PageSelectProject> {
     }
     globalDC =
         providerBackend?.webRTCServices.getDataChannel(DataChannelType.GLOBAL);
-    globalDC?.onMessage = (data) {
+    globalDC?.onMessage = (data) async {
       print(data.text);
       var decodedMap = json.decode(data.text);
       String action = decodedMap['action'];
       //PROCESS OPEN FILE
       if (action == ReqRespAction.OPEN_FILE.toString()) {
+        var fileModel = await ReqRespService.Process_OpenFileRequest(
+            decodedMap, providerBackend!);
         setState(() {
-          openFileModel = ReqRespService.Process_OpenFile(decodedMap);
+          openFileModel = fileModel;
         });
       }
     };

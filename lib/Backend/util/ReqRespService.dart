@@ -11,10 +11,6 @@ import 'ReqRespAction.dart';
 class ReqRespService {
   static Future<void> Order_OpenFile(String encodedFileData, String fileName,
       ProviderBackend providerBackend) async {
-    if (providerBackend.webRTCServices.isCaller == false) {
-      throw Exception(
-          "You are not the Host/Caller. You are not allowed to do 'Order_OpenFile' Request.");
-    }
     var map = {
       "uid": providerBackend.uid,
       "action": ReqRespAction.OPEN_FILE.toString(),
@@ -29,10 +25,14 @@ class ReqRespService {
     await dc.send(RTCDataChannelMessage(encodedResp));
   }
 
-  static OpenFileModel? Process_OpenFile(String encodedResp) {
+  static Future<OpenFileModel?> Process_OpenFileRequest(
+      String encodedResp, ProviderBackend providerBackend) async {
     var map = json.decode(encodedResp);
     if (map['action'] == ReqRespAction.OPEN_FILE.toString()) {
-      return OpenFileModel(map['data']['name'], map['data']['encodedData']);
+      //Check if we are a caller or callee. If callee, loopback the data to caller as in webRTC p2p a msg can only be sent and received so a msg sent by caller will be sent to ONLY the callee and not the caller. So we setup a loop back data channel
+      var fileModel =
+          OpenFileModel(map['data']['name'], map['data']['encodedData']);
+      return fileModel;
     }
     return null;
   }

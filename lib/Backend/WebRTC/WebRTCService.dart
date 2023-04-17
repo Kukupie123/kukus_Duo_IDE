@@ -11,6 +11,7 @@ class WebRTCService {
       "https://kukukode.metered.live/api/v1/turn/credentials?apiKey=9a5291dbc60a034b7a899a94ee60f2e02453";
 
   final Map<String, RTCDataChannel> _dataChannels = {};
+  final Map<String, RTCDataChannelMessage> dataMsgs = {};
 
   Future<void> asyncConstructor() async {
     await _createPeer();
@@ -32,14 +33,13 @@ class WebRTCService {
     await addDataChannel(
         DataChannelType.LOOPBACK, 1); //Add loopback data channel
 
-    //Events
-    getDataChannel(DataChannelType.GLOBAL)!.onMessage = (data) {
-      print("Global Data : ${data.text}");
-      getDataChannel(DataChannelType.LOOPBACK)!.send(data);
-    };
-    getDataChannel(DataChannelType.LOOPBACK)!.onMessage = (data) {
-      print("Loop back data : ${data.text}");
-    };
+    //Setup Loopback event handlers
+    /*
+    Anything that comes on the main channel will be sent to the loop back server.
+    Loop back server will send data back to the sender but with uid as loopback to signify that it was his own data.
+    We need to have uid because if we don't do this we are going to end up in an infinite loop where the sender and receiver
+    is going to be stuck in a loop of sending data->loopback
+     */
   }
 
   Future<Map<String, dynamic>> _createPeerConfig() async {

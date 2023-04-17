@@ -11,7 +11,7 @@ class WebRTCService {
       "https://kukukode.metered.live/api/v1/turn/credentials?apiKey=9a5291dbc60a034b7a899a94ee60f2e02453";
 
   final Map<String, RTCDataChannel> _dataChannels = {};
-  final Map<String, RTCDataChannelMessage> dataMsgs = {};
+  final Map<String, RTCDataChannelMessage> _dataMsgs = {};
 
   Future<void> asyncConstructor() async {
     await _createPeer();
@@ -121,5 +121,13 @@ class WebRTCService {
     if (_dataChannels.containsKey(type)) return;
     var dc = _dataChannels[type];
     await dc?.close();
+  }
+
+  RTCDataChannelMessage? getDataMsg(DataChannelType type) {
+    return _dataMsgs[type.toString()];
+  }
+
+  void setDataMsg(DataChannelType type, RTCDataChannelMessage msg) {
+    _dataMsgs[type.toString()] = msg;
   }
 }

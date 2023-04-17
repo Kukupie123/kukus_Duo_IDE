@@ -45,16 +45,14 @@ class _PageSelectProjectState extends State<PageSelectProject> {
     return Consumer<ProviderBackend>(
         builder: (context, value, child) {
           //Check if we have valid RTCMessage in dataMsgs map variable
-          var dcMsg =
-          value.webRTCServices.dataMsgs[DataChannelType.GLOBAL.toString()];
+          var dcMsg = value.webRTCServices.getDataMsg(DataChannelType.GLOBAL);
           if (dcMsg == null) {
             print("Data Msg of Global DC is null");
             return child!;
           }
           return Text(dcMsg.text);
         },
-        child: _childDecider(navigatorState)
-    );
+        child: _childDecider(navigatorState));
   }
 
   Widget _childDecider(NavigatorState navigatorState) {
@@ -63,7 +61,8 @@ class _PageSelectProjectState extends State<PageSelectProject> {
       return Text("webRTCServices of Provider backend is null");
     }
 
-    ProviderBackend validBackendProvider = providerBackend!; //Fight against no null system of dart
+    ProviderBackend validBackendProvider =
+        providerBackend!; //Fight against no null system of dart
     WebRTCService webRTCService = validBackendProvider.webRTCServices;
     if (webRTCService.isCaller) {
       return SingleChildScrollView(
@@ -79,7 +78,7 @@ class _PageSelectProjectState extends State<PageSelectProject> {
                   await providerBackend?.webRTCServices
                       .getDataChannel(DataChannelType.GLOBAL)!
                       .send(RTCDataChannelMessage(
-                      json.encode({"action": "Hello", "data": "dummy"})));
+                          json.encode({"action": "Hello", "data": "dummy"})));
                 },
                 child: Text("Open Folder (WIP)"))
           ],

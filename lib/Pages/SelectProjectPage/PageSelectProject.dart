@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:kukus_multi_user_ide/Backend/WebRTC/DataChannelType.dart';
 import 'package:kukus_multi_user_ide/Backend/provider/ProviderBackend.dart';
-import 'package:kukus_multi_user_ide/Backend/util/ReqRespAction.dart';
 import 'package:kukus_multi_user_ide/Backend/util/ReqRespService.dart';
 import 'package:provider/provider.dart';
 
@@ -76,10 +75,7 @@ class _PageSelectProjectState extends State<PageSelectProject> {
   }
 
   initialSetup(BuildContext context) {
-    //Retrieve provider
     providerBackend = Provider.of<ProviderBackend>(context, listen: false);
-    //Setup Global listener events
-    _addListenerToGlobalDC();
     setState(() {});
   }
 
@@ -97,26 +93,5 @@ class _PageSelectProjectState extends State<PageSelectProject> {
       await ReqRespService.Order_OpenFile(
           encodedContents, fileName, providerBackend!);
     }
-  }
-
-  void _addListenerToGlobalDC() {
-    if (providerBackend == null) {
-      throw Exception("Provider Backend is NULL");
-    }
-    globalDC =
-        providerBackend?.webRTCServices.getDataChannel(DataChannelType.GLOBAL);
-    globalDC?.onMessage = (data) async {
-      print(data.text);
-      var decodedMap = json.decode(data.text);
-      String action = decodedMap['action'];
-      //PROCESS OPEN FILE
-      if (action == ReqRespAction.OPEN_FILE.toString()) {
-        var fileModel = await ReqRespService.Process_OpenFileRequest(
-            decodedMap, providerBackend!);
-        setState(() {
-          openFileModel = fileModel;
-        });
-      }
-    };
   }
 }

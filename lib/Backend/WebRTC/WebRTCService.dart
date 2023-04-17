@@ -10,7 +10,7 @@ class WebRTCService {
   String meteredTurnAPIKey =
       "https://kukukode.metered.live/api/v1/turn/credentials?apiKey=9a5291dbc60a034b7a899a94ee60f2e02453";
 
-  Map<String, RTCDataChannel> _dataChannels = {};
+  final Map<String, RTCDataChannel> _dataChannels = {};
 
   Future<void> asyncConstructor() async {
     await _createPeer();
@@ -32,10 +32,14 @@ class WebRTCService {
     await addDataChannel(
         DataChannelType.LOOPBACK, 1); //Add loopback data channel
 
-    //Add loopback listener for global DC. We do this because we need the caller to also get back the data it sends to callee
-    var gdc = _dataChannels[DataChannelType.GLOBAL];
-    var ldc = _dataChannels[DataChannelType.LOOPBACK];
-    gdc?.onMessage = (data) async => await ldc?.send(data);
+    //Events
+    getDataChannel(DataChannelType.GLOBAL)!.onMessage = (data) {
+      print("Global Data : ${data.text}");
+      getDataChannel(DataChannelType.LOOPBACK)!.send(data);
+    };
+    getDataChannel(DataChannelType.LOOPBACK)!.onMessage = (data) {
+      print("Loop back data : ${data.text}");
+    };
   }
 
   Future<Map<String, dynamic>> _createPeerConfig() async {

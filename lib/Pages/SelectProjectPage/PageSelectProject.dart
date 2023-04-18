@@ -50,6 +50,12 @@ class _PageSelectProjectState extends State<PageSelectProject> {
             print("Data Msg of Global DC is null");
             return child!;
           }
+          openFileModel = ReqRespService.Process_OpenFileRequest(
+              dcMsg.text, providerBackend!);
+          if (openFileModel != null) {
+            OpenFileModel gg = openFileModel!;
+            Text(gg.name);
+          }
           return Text(dcMsg.text);
         },
         child: _childDecider(navigatorState));

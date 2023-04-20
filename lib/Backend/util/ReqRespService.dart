@@ -27,13 +27,19 @@ class ReqRespService {
 
   static OpenFileModel? Process_OpenFileRequest(
       String encodedResp, ProviderBackend providerBackend) {
-    var map = json.decode(encodedResp);
+    Map<String, dynamic> map = json.decode(encodedResp);
+    print(map);
     if (map['action'] == ReqRespAction.OPEN_FILE.toString()) {
+      print("Actin is open file");
+      var d = map['data'];
+      var name = d['name'];
+      var encodedData = d['encodedData'];
       //Check if we are a caller or callee. If callee, loopback the data to caller as in webRTC p2p a msg can only be sent and received so a msg sent by caller will be sent to ONLY the callee and not the caller. So we setup a loop back data channel
-      var fileModel =
-          OpenFileModel(map['data']['name'], map['data']['encodedData']);
+      OpenFileModel fileModel = OpenFileModel(name, encodedData);
+      print(fileModel.name);
       return fileModel;
     }
+    print("Action is not OPEN_FILE");
     return null;
   }
 }

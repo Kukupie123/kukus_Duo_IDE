@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_constructors, use_build_context_synchronously
 
 import 'dart:convert';
 
@@ -9,6 +9,7 @@ import 'package:kukus_multi_user_ide/Backend/WebRTC/DataChannelType.dart';
 import 'package:kukus_multi_user_ide/Backend/WebRTC/WebRTCService.dart';
 import 'package:kukus_multi_user_ide/Backend/provider/ProviderBackend.dart';
 import 'package:kukus_multi_user_ide/Backend/util/ReqRespService.dart';
+import 'package:kukus_multi_user_ide/Pages/PageFileEditor/PageFileEditor.dart';
 import 'package:provider/provider.dart';
 
 class PageSelectProject extends StatefulWidget {
@@ -54,8 +55,10 @@ class _PageSelectProjectState extends State<PageSelectProject> {
               dcMsg.text, providerBackend!);
           if (openFileModel != null) {
             OpenFileModel gg = openFileModel!;
-            Text(gg.name);
+            _navToFileEditor(Navigator.of(context));
+            return Text("Opening File Editor");
           }
+          print("OpenFile Model is null");
           return Text(dcMsg.text);
         },
         child: _childDecider(navigatorState));
@@ -68,7 +71,7 @@ class _PageSelectProjectState extends State<PageSelectProject> {
     }
 
     ProviderBackend validBackendProvider =
-        providerBackend!; //Fight against no null system of dart
+    providerBackend!; //Fight against no null system of dart
     WebRTCService webRTCService = validBackendProvider.webRTCServices;
     if (webRTCService.isCaller) {
       return SingleChildScrollView(
@@ -84,7 +87,7 @@ class _PageSelectProjectState extends State<PageSelectProject> {
                   await providerBackend?.webRTCServices
                       .getDataChannel(DataChannelType.GLOBAL)!
                       .send(RTCDataChannelMessage(
-                          json.encode({"action": "Hello", "data": "dummy"})));
+                      json.encode({"action": "Hello", "data": "dummy"})));
                 },
                 child: Text("Open Folder (WIP)"))
           ],
@@ -113,5 +116,14 @@ class _PageSelectProjectState extends State<PageSelectProject> {
       await ReqRespService.Order_OpenFile(
           encodedContents, fileName, providerBackend!);
     }
+  }
+
+  void _navToFileEditor(NavigatorState navigatorState) async {
+    await Future.delayed(Duration(seconds: 1));
+    Navigator.push(
+      navigatorState.context,
+      MaterialPageRoute(
+          builder: (context) => PageFileEditor(openFileModel!),
+    ));
   }
 }

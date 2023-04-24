@@ -29,3 +29,6 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
+//TODO: Better UI and comment and clean code
+//TODO: Move file editor messages to its custom channel not global channel
